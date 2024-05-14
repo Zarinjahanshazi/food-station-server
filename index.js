@@ -15,7 +15,7 @@ const port = process.env.PORT || 5000;
 app.use(
     cors({
       origin: [
-        "http://localhost:5174",
+        "http://localhost:5173",
        
       ],
       credentials: true,
@@ -60,10 +60,12 @@ async function run() {
     // Send a ping to confirm a successful connection
     const userCollection = client.db("foodStation").collection("users");
     const foodCollection = client.db("foodStation").collection("food");
-
+    // const userCollection = client.db("foodStation").collection("users");
+    // const foodCollection = client.db("foodStation").collection("food");
+    const requestCollection = client.db("foodStation").collection("request");
     app.post("/jwt", async (req, res) => {
       const logged = req.body;
-      console.log("user for token", logged);
+      // console.log("user for token", logged);
       const token = jwt.sign(logged, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
@@ -175,7 +177,25 @@ async function run() {
     //     res.send(result);
     //   })
 
-
+    app.get("/request/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email)
+      const query = { foodDonatorEmail: email };
+      const result = await requestCollection.find(query).toArray();
+      console.log(result)
+      res.send(result);
+    });
+    app.post("/request", async (req, res) => {
+      const request = req.body;
+      const result = await requestCollection.insertOne(request);
+      res.send(result);
+    });
+    app.delete("/request/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const food = await requestCollection.deleteOne(query);
+      res.send(food);
+    });
 
 
   } catch (err) {
