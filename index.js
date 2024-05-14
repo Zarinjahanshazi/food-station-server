@@ -1,3 +1,4 @@
+const cookieParser = require('cookie-parser')
 const express = require("express");
 require("dotenv").config();
 
@@ -14,17 +15,18 @@ const port = process.env.PORT || 5000;
 //Must remove "/" from your production URL
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin:[ "http://localhost:5173", "https://food-station-59c20.firebaseapp.com", "https://food-station-59c20.web.app"],
     credentials: true,
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 console.log(process.env.DB_PASS)
 console.log(process.env.DB_USER)
 
 const uri =
-  "mongodb+srv://foodStation:RhpR3AYCleJmofUD@cluster0.s8jaol5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.s8jaol5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -50,10 +52,16 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+const cookeOption =  {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
     const userCollection = client.db("foodStation").collection("users");
     const foodCollection = client.db("foodStation").collection("food");
@@ -68,19 +76,15 @@ async function run() {
       });
 
       res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        })
+        .cookie("token", token,cookeOption)
         .send({ success: true });
     });
 
-    // app.post("/logout", async (req, res) => {
-    //   const logged = req.body;
-    //   console.log("logging out", logged);
-    //   res.clearCookie("token", { maxAge: 0 }).send({ success: true });
-    // });
+    app.post("/logout", async (req, res) => {
+      const logged = req.body;
+      console.log("logging out", logged);
+      res.clearCookie("token", {...cookeOption ,maxAge: 0 }).send({ success: true });
+    });
 
     //user related api
     app.get("/users", async (req, res) => {
@@ -96,7 +100,12 @@ async function run() {
     });
 
     // Food related API
-    app.get("/food", async (req, res) => {
+    app.get("/myFood",async(req,res) =>{
+      const result = await foodCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get("/food",verifyToken, async (req, res) => {
       const userEmail = req.query.email;
 
       try {
@@ -119,7 +128,7 @@ async function run() {
       const result = await foodCollection.insertOne(food);
       res.send(result);
     });
-    app.get("/food/:id", async (req, res) => {
+    app.get("/food/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const food = await foodCollection.findOne(query);
@@ -174,7 +183,7 @@ async function run() {
     //     res.send(result);
     //   })
 
-    app.get("/request/:email", async (req, res) => {
+    app.get("/request/:email",verifyToken, async (req, res) => {
       const email = req.params.email;
       // console.log(email)
       const query = { foodDonatorEmail: email };
