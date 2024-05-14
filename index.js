@@ -13,14 +13,11 @@ const port = process.env.PORT || 5000;
 // middleware
 //Must remove "/" from your production URL
 app.use(
-    cors({
-      origin: [
-        "http://localhost:5173",
-       
-      ],
-      credentials: true,
-    })
-  );
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 console.log(process.env.DB_PASS)
@@ -130,37 +127,37 @@ async function run() {
       res.send(food);
     });
 
-    app.patch("/food/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const updatedFood = req.body;
-      const updatedDoc = {
-        $set: {
-          status: updatedFood.status,
-        },
-      };
-      const food = await foodCollection.updateOne(query, updatedDoc);
-      res.send(food);
-    });
+    // app.patch("/food/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const updatedFood = req.body;
+    //   const updatedDoc = {
+    //     $set: {
+    //       status: updatedFood.status,
+    //     },
+    //   };
+    //   const food = await foodCollection.updateOne(query, updatedDoc);
+    //   res.send(food);
+    // });
 
-    // app.put('/foods/:id', async (req, res) => {
-    //     const id = req.params.id;
-    //     const filter = { _id: new ObjectId(id) }
-    //     const options = { upset: true };
-    //     const updatedProduct = req.body;
-    //     const food = {
-    //       $set: {
-    //         foodName: updatedProduct.foodName,
-    //         foodCategory: updatedProduct.foodCategory,
-    //         quantity: updatedProduct.quantity,
-    //         origin: updatedProduct.origin,
-    //         price: updatedProduct.price,
-    //         descriptions: updatedProduct.descriptions,
-    //       }
-    //     }
-    //     const result = await foodCollection.updateOne(filter, food, options);
-    //     res.send(result);
-    //   })
+    app.put('/food/:id', async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) }
+        const options = { upset: true };
+        const updatedProduct = req.body;
+        const food = {
+          $set: {
+            food_name: updatedProduct.food_name,
+            pickup_location: updatedProduct.pickup_location,
+            food_quantity: updatedProduct.food_quantity,
+            additional_notes: updatedProduct.additional_notes,
+            // price: updatedProduct.price,
+            // descriptions: updatedProduct.descriptions,
+          }
+        }
+        const result = await foodCollection.updateOne(filter, food, options);
+        res.send(result);
+      })
     
     app.delete("/food/:id", async (req, res) => {
       const id = req.params.id;
