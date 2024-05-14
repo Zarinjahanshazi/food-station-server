@@ -128,37 +128,37 @@ async function run() {
       res.send(food);
     });
 
-    // app.patch("/food/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-    //   const updatedFood = req.body;
-    //   const updatedDoc = {
-    //     $set: {
-    //       status: updatedFood.status,
-    //     },
-    //   };
-    //   const food = await foodCollection.updateOne(query, updatedDoc);
-    //   res.send(food);
-    // });
+    app.patch("/food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedFood = req.body;
+      const updatedDoc = {
+        $set: {
+          status: updatedFood.status,
+        },
+      };
+      const food = await foodCollection.updateOne(query, updatedDoc);
+      res.send(food);
+    });
 
-    app.put('/foods/:id', async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) }
-        const options = { upset: true };
-        const updatedProduct = req.body;
-        const food = {
-          $set: {
-            foodName: updatedProduct.foodName,
-            foodCategory: updatedProduct.foodCategory,
-            quantity: updatedProduct.quantity,
-            origin: updatedProduct.origin,
-            price: updatedProduct.price,
-            descriptions: updatedProduct.descriptions,
-          }
-        }
-        const result = await foodCollection.updateOne(filter, food, options);
-        res.send(result);
-      })
+    // app.put('/foods/:id', async (req, res) => {
+    //     const id = req.params.id;
+    //     const filter = { _id: new ObjectId(id) }
+    //     const options = { upset: true };
+    //     const updatedProduct = req.body;
+    //     const food = {
+    //       $set: {
+    //         foodName: updatedProduct.foodName,
+    //         foodCategory: updatedProduct.foodCategory,
+    //         quantity: updatedProduct.quantity,
+    //         origin: updatedProduct.origin,
+    //         price: updatedProduct.price,
+    //         descriptions: updatedProduct.descriptions,
+    //       }
+    //     }
+    //     const result = await foodCollection.updateOne(filter, food, options);
+    //     res.send(result);
+    //   })
     
     app.delete("/food/:id", async (req, res) => {
       const id = req.params.id;
